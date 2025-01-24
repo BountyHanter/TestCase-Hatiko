@@ -1,0 +1,51 @@
+app/bot_logs.json
+test_imeicheck.py
+
+# Игнорирование стандартных папок PyCharm
+.idea/
+
+# Игнорирование виртуальных окружений
+venv/
+.env/
+*.env
+
+# Игнорирование файлов, создаваемых Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Игнорирование логов
+logs/
+*.log
+
+# Игнорирование файлов базы данных
+*.sqlite3
+*.sqlite
+
+
+# Игнорирование результатов тестов
+.coverage
+*.coverage
+htmlcov/
+.tox/
+nosetests.xml
+coverage.xml
+*.egg-info/
+dist/
+build/
+
+# Игнорирование временных файлов системы
+.DS_Store
+Thumbs.db
+
+# Игнорирование пользовательских настроек
+*.swp
+*~
+*.bak
+*.tmp
+*.orig
+
+# Игнорирование файлов кеша и других временных файлов
+.cache/
+*.pytest_cache/
+pip-wheel-metadata/
