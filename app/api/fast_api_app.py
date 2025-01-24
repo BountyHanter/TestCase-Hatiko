@@ -3,13 +3,13 @@ import logging
 from fastapi import FastAPI, HTTPException, Depends
 from starlette import status
 
-from .db_queries import generate_token, save_token_to_db, get_user_id, save_user_to_db
+from app.api.db_queries import get_user_id, save_user_to_db, generate_token, save_token_to_db
+from app.api.logger.logging_config import setup_logging
+from app.api.logger.logging_templates import log_error, log_warning, log_info
 from app.api.utils import authenticate
 from app.services import is_valid_imei
 from app.services import request_check_imei
 from migrate import ADMIN_TOKEN
-from .logger.logging_config import setup_logging
-from .logger.logging_templates import log_error, log_warning, log_info
 
 app = FastAPI()
 
@@ -20,6 +20,19 @@ logger = logging.getLogger("test_case")
 
 @app.post("/api/check-imei")
 async def check_imei(imei: str, token: str = Depends(authenticate)):
+    """
+    Проверяет IMEI через внешний сервис.
+
+    **Параметры:**
+    - `imei` (str): IMEI устройства.
+    - `token` (str): Токен авторизации (передаётся через заголовок).
+
+    **Ответы:**
+    - `200 OK`: Устройство успешно проверено, возвращает информацию об IMEI.
+    - `400 Bad Request`: IMEI не передан или пустой.
+    - `418 I'm a teapot`: IMEI не валиден. (шутливый HTTP ответ)
+    - `502 Bad Gateway`: Ошибка на стороне внешнего сервиса.
+    """
     if imei is None or imei == "":
         log_error(
             action="Проверка IMEI",
@@ -80,6 +93,18 @@ async def check_imei(imei: str, token: str = Depends(authenticate)):
 
 @app.get("/api/white-list")
 async def white_list(user_id: str, token_data: dict = Depends(authenticate)):
+    """
+    Проверяет, есть ли пользователь в белом списке.
+
+    **Параметры:**
+    - `user_id` (str): ID пользователя, который проверяется.
+    - `token_data` (dict): Данные токена (передаётся через заголовок).
+
+    **Ответы:**
+    - `200 OK`: Пользователь находится в белом списке.
+    - `400 Bad Request`: User ID не передан.
+    - `401 Unauthorized`: Пользователь не имеет доступа.
+    """
     if user_id is None or user_id == "":
         log_warning(
             action="Проверка юзера в White List",
@@ -115,6 +140,17 @@ async def white_list(user_id: str, token_data: dict = Depends(authenticate)):
 
 @app.post("/api/white-list/save")
 async def white_list_save(user_id: str, token_data: dict = Depends(authenticate)):
+    """
+    Добавляет пользователя в белый список.
+
+    **Параметры:**
+    - `user_id` (str): ID пользователя, который добавляется в белый список.
+    - `token_data` (dict): Данные токена (передаётся через заголовок).
+
+    **Ответы:**
+    - `200 OK`: Пользователь успешно добавлен в белый список.
+    - `400 Bad Request`: User ID не передан.
+    """
     if user_id is None or user_id == "":
         log_warning(
             action="Добавление юзера в White List",
@@ -139,6 +175,16 @@ async def white_list_save(user_id: str, token_data: dict = Depends(authenticate)
 
 @app.post("/api/auth")
 async def auth(admin_token: str):
+    """
+    Генерирует новый токен с использованием admin_token.
+
+    **Параметры:**
+    - `admin_token` (str): Токен администратора для авторизации.
+
+    **Ответы:**
+    - `200 OK`: Возвращает новый токен.
+    - `401 Unauthorized`: Неверный admin_token.
+    """
     if admin_token != ADMIN_TOKEN:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
